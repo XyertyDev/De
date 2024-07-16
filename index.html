@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadoras</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* --- General Styles --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            overflow: hidden; 
+        }
+
+        body.dark-mode {
+            background-color: #222; 
+        }
+
+        /* --- Minimalist Circular Decoration --- */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(204, 255, 204, 0.5), transparent); 
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.8; 
+        }
+
+        .calculator-card {
+            background: linear-gradient(135deg, #90EE90, #98FB98); 
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            color: #333; 
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            color: #333; 
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        /* --- Forms and Inputs --- */
+        form {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        label {
+            text-align: left;
+            margin-bottom: 8px;
+            color: #333; 
+        }
+
+        input {
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #333; 
+        }
+
+        /* --- Buttons --- */
+        button, .back-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        button {
+            background-color: #007bff; 
+            color: white;
+        }
+
+        button:hover {
+            background-color: #0062cc; 
+        }
+
+        .back-button {
+            background-color: #6c757d; 
+            color: white;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268; 
+        }
+
+        button#resetButton, button#resetButton2, button#resetButton3 {
+            background-color: #dc3545; 
+        }
+
+        button#resetButton:hover, button#resetButton2:hover, button#resetButton3:hover {
+            background-color: #c82333; 
+        }
+
+        /* --- Popups --- */
+        .popup {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px; 
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 10; 
+            border-radius: 10px;
+        }
+
+        /* --- Popup Styles (Dark Mode Unaffected) --- */
+        .popup .popup-content {
+            background: linear-gradient(135deg, #28313B, #485461); 
+            color: white; 
+            padding: 20px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .popup .popup-content p { 
+            font-weight: bold; 
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* --- History Styles --- */
+        #historyList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #historyList li {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        body.dark-mode #historyList li {
+            border-bottom-color: #333; 
+        }
+
+        /* --- Theme Switcher --- */
+        .settings {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .settings button {
+            background: none;
+            border: none;
+            padding: 5px;
+            margin: 0;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        /* --- Copy Button --- */
+        .copy-button {
+            background-color: #4CAF50; 
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* --- Basic Calculator Styles --- */
+        #basicCalculator {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            grid-gap: 10px; 
+            max-width: 300px;
+        }
+
+        #basicCalculator button {
+            padding: 15px; 
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            background-color: #eee;
+            color: #333;
+        }
+
+        #basicCalculator button:hover {
+            background-color: #ddd; 
+        }
+
+        #basicCalculator button#equals {
+            background-color: #28a745; 
+            color: white;
+        }
+
+        #basicCalculator button#equals:hover {
+            background-color: #218838;
+        }
+
+        #basicCalculator .operator {
+            background-color: #f0ad4e; 
+            color: white;
+        }
+
+        #basicCalculator .operator:hover {
+            background-color: #ec971f; 
+        }
+
+        #basicCalculator input[type="text"] {
+            grid-column: span 4; 
+            padding: 15px; 
+            font-size: 1.5em; 
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: right; 
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="settings">
+        <button onclick="toggleTheme()"><i class="fas fa-adjust"></i></button>
+    </div>
+
+    <div class="calculator-card" id="homeScreen">
+        <h1>Calculadoras</h1>
+        <div class="calculator-list">
+            <button onclick="showCalculator('reglaDeTres')"><i class="fas fa-divide"></i> Regla de Tres</button>
+            <button onclick="showCalculator('probabilidades')"><i class="fas fa-percentage"></i> Probabilidades</button>
+            <button onclick="showCalculator('calculatorBasica')"><i class="fas fa-calculator"></i> Calculadora Básica</button> 
+        </div>
+        <button onclick="showHistory()"><i class="fas fa-history"></i> Historial</button>
+    </div>
+
+    <div id="reglaDeTres" class="container calculator-card" style="display: none;">
+        <h1><i class="fas fa-divide"></i> Regla de Tres</h1>
+        <form id="ruleOfThreeForm">
+            <label for="a">Valor A:</label>
+            <input type="number" id="a" required>
+            <label for="b">Valor B:</label>
+            <input type="number" id="b" required>
+            <label for="c">Valor C:</label>
+            <input type="number" id="c" required>
+            <button type="submit">Calcular</button>
+        </form>
+        <button id="resetButton" onclick="resetForm('ruleOfThreeForm')">Reiniciar</button>
+        <button class="back-button" onclick="returnToHome()"><i class="fas fa-arrow-left"></i> Volver al Menú</button>
+    </div>
+
+    <div id="probabilidades" class="container calculator-card" style="display: none;">
+        <h1><i class="fas fa-percentage"></i> Probabilidades</h1>
+        <form id="probabilityForm">
+            <label for="numFavorables">Casos Favorables:</label>
+            <input type="number" id="numFavorables" required>
+            <label for="numTotales">Casos Totales:</label>
+            <input type="number" id="numTotales" required>
+            <button type="submit">Calcular</button>
+        </form>
+        <button id="resetButton2" onclick="resetForm('probabilityForm')">Reiniciar</button>
+        <button class="back-button" onclick="returnToHome()"><i class="fas fa-arrow-left"></i> Volver al Menú</button>
+    </div>
+
+    <div id="calculatorBasica" class="container calculator-card" style="display: none;">
+        <h1><i class="fas fa-calculator"></i> Calculadora Básica</h1>
+        <div id="basicCalculator">
+            <input type="text" id="display" readonly> 
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button class="operator" onclick="appendToDisplay('+')">+</button>
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button class="operator" onclick="appendToDisplay('-')">-</button>
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button class="operator" onclick="appendToDisplay('*')">*</button>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button id="equals" onclick="calculateResult()">=</button>
+            <button class="operator" onclick="appendToDisplay('/')">/</button>
+            <button id="resetButton3" onclick="clearDisplay()">C</button>
+        </div>
+        <button class="back-button" onclick="returnToHome()"><i class="fas fa-arrow-left"></i> Volver al Menú</button>
+    </div>
+
+    <div id="resultPopup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup('resultPopup')">×</span>
+            <div id="resultText"></div>
+            <button class="copy-button" onclick="copyResult('resultText')">Copiar</button>
+        </div>
+    </div>
+
+    <div id="resultPopup2" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup('resultPopup2')">×</span>
+            <div id="resultText2"></div>
+            <button class="copy-button" onclick="copyResult('resultText2')">Copiar</button>
+        </div>
+    </div>
+
+    <div id="historyPopup" class="popup">
+        <div class="popup-content">
+            <span class="close" onclick="closePopup('historyPopup')">×</span>
+            <h2><i class="fas fa-history"></i> Historial</h2>
+            <ul id="historyList"></ul>
+            <button onclick="clearHistory()">Limpiar Historial</button>
+        </div>
+    </div>
+
+    <script>
+        let history = loadHistory();
+
+        // Theme Switching
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        // Calculator Navigation
+        function showCalculator(id) {
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById(id).style.display = 'block';
+        }
+
+        function returnToHome() {
+            document.querySelectorAll('.container').forEach(container => {
+                container.style.display = 'none';
+            });
+            document.getElementById('homeScreen').style.display = 'block';
+        }
+
+        // History Functions
+        function showHistory() {
+            updateHistoryDisplay();
+            document.getElementById('historyPopup').style.display = 'block'; 
+        }
+
+        function closePopup(popupId) {
+            document.getElementById(popupId).style.display = 'none';
+            if (popupId === 'resultPopup') {
+                document.getElementById('resultText').innerHTML = ''; 
+            } else if (popupId === 'resultPopup2') {
+                document.getElementById('resultText2').innerHTML = ''; 
+            }
+        }
+
+        function addHistoryItem(item) {
+            history.push(item);
+            saveHistory(history);
+            updateHistoryDisplay();
+        }
+
+        function clearHistory() {
+            history = [];
+            saveHistory(history);
+            updateHistoryDisplay();
+        }
+
+        function loadHistory() {
+            const storedHistory = localStorage.getItem('calculatorHistory');
+            return storedHistory ? JSON.parse(storedHistory) : [];
+        }
+
+        function saveHistory(historyArray) {
+            localStorage.setItem('calculatorHistory', JSON.stringify(historyArray));
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            history.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `${item} <button class="copy-button" onclick="copyHistoryItem(${index})">Copiar</button>`;
+                historyList.appendChild(li);
+            });
+        }
+
+        // Form Functions
+        function resetForm(formId) {
+            document.getElementById(formId).reset();
+        }
+
+        document.getElementById('ruleOfThreeForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const a = parseFloat(document.getElementById('a').value);
+            const b = parseFloat(document.getElementById('b').value);
+            const c = parseFloat(document.getElementById('c').value);
+
+            if (isNaN(a) || isNaN(b) || isNaN(c) || a === 0) {
+                alert('Por favor ingrese valores válidos.'); 
+                return;
+            }
+
+            const result = (b * c) / a;
+            const operation = `${b} * ${c} / ${a} =`;
+
+            document.getElementById('resultText').innerHTML = `
+                <p>${operation} ${result.toFixed(2)}</p>
+            `;
+            document.getElementById('resultPopup').style.display = 'block';
+
+            addHistoryItem(`Regla de Tres: ${operation} ${result.toFixed(2)}`);
+        });
+
+        document.getElementById('probabilityForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const numFavorables = parseFloat(document.getElementById('numFavorables').value);
+            const numTotales = parseFloat(document.getElementById('numTotales').value);
+
+            if (isNaN(numFavorables) || isNaN(numTotales) || numTotales === 0) {
+                alert('Por favor ingrese valores válidos.'); 
+                return;
+            }
+
+            const probabilidadFraccion = `${numFavorables}/${numTotales}`;
+            const probabilidadPorcentaje = (numFavorables / numTotales) * 100;
+
+            document.getElementById('resultText2').innerHTML = `
+                <p>Fracción: ${probabilidadFraccion}</p>
+                <p>Porcentaje: ${probabilidadPorcentaje.toFixed(2)}%</p>
+            `;
+            document.getElementById('resultPopup2').style.display = 'block';
+
+            addHistoryItem(`Probabilidad: ${probabilidadFraccion} (${probabilidadPorcentaje.toFixed(2)}%)`);
+        });
+
+        // Copy Result Functions
+        function copyResult(elementId) {
+            const resultText = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(resultText)
+                .then(() => {
+                    alert("Resultado copiado al portapapeles!");
+                })
+                .catch(err => {
+                    console.error("Error al copiar al portapapeles: ", err);
+                });
+        }
+
+        function copyHistoryItem(index) {
+            navigator.clipboard.writeText(history[index])
+                .then(() => {
+                    alert("Elemento del historial copiado al portapapeles!");
+                })
+                .catch(err => {
+                    console.error("Error al copiar al portapapeles: ", err);
+                });
+        }
+
+        // Basic Calculator Functions 
+        function appendToDisplay(value) {
+            document.getElementById('display').value += value;
+        }
+
+        function clearDisplay() {
+            document.getElementById('display').value = '';
+        }
+
+        function calculateResult() {
+            try {
+                const result = eval(document.getElementById('display').value);
+                document.getElementById('display').value = result;
+                addHistoryItem(`Calculadora Básica: ${result}`);
+            } catch (error) {
+                alert("Expresión inválida.");
+            }
+        }
+    </script>
+</body>
+</html>
